@@ -6,12 +6,12 @@ from typing import List, Optional
 import os
 
 from ..storage.models import DailyStats, Task
-from ..analytics.stats_calculator import WeeklyStats
+from ..analytics.stats_calculator import WeeklyStats, DailySummary
 
 
 class PDFExporter:
     @staticmethod
-    def export_daily_report(stats: DailyStats, file_path: str) -> bool:
+    def export_daily_report(stats, file_path: str) -> bool:
         try:
             printer = QPrinter(QPrinter.PrinterMode.HighResolution)
             printer.setOutputFormat(QPrinter.OutputFormat.PdfFormat)
@@ -62,10 +62,13 @@ class PDFExporter:
             return False
 
     @staticmethod
-    def _generate_daily_html(stats: DailyStats) -> str:
+    def _generate_daily_html(stats) -> str:
         work_hours = stats.work_seconds / 3600
         work_minutes = stats.work_seconds // 60
         break_minutes = stats.break_seconds // 60
+
+        pomodoros = getattr(stats, 'pomodoros', None) or getattr(stats, 'pomodoros_completed', 0)
+        tasks = getattr(stats, 'tasks', None) or getattr(stats, 'tasks_completed', 0)
 
         return f"""
         <!DOCTYPE html>
@@ -99,11 +102,11 @@ class PDFExporter:
                 </div>
                 <div class="stat-item">
                     <span class="stat-label">完成番茄：</span>
-                    <span class="stat-value highlight">{stats.pomodoros} 个</span>
+                    <span class="stat-value highlight">{pomodoros} 个</span>
                 </div>
                 <div class="stat-item">
                     <span class="stat-label">完成任务：</span>
-                    <span class="stat-value">{stats.tasks} 个</span>
+                    <span class="stat-value">{tasks} 个</span>
                 </div>
             </div>
             

@@ -79,7 +79,12 @@ class StatsCalculator:
             all_dates.append(current)
             current += timedelta(days=1)
 
-        stats_by_date = {s.date: s for s in stats_list}
+        def get_date_key(d):
+            if isinstance(d, datetime):
+                return d.date()
+            return d
+
+        stats_by_date = {get_date_key(s.date): s for s in stats_list}
         full_breakdown = []
         for d in all_dates:
             if d in stats_by_date:

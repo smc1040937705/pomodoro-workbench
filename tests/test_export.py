@@ -101,7 +101,7 @@ class TestCSVExporter:
 
 
 class TestPDFExporter:
-    def test_export_daily_report(self):
+    def test_export_daily_report(self, qapp):
         from src.analytics.stats_calculator import DailySummary
 
         summary = DailySummary(
@@ -125,7 +125,7 @@ class TestPDFExporter:
         finally:
             os.unlink(file_path)
 
-    def test_export_weekly_report(self):
+    def test_export_weekly_report(self, qapp):
         weekly = WeeklyStats(
             start_date=date(2024, 1, 1),
             end_date=date(2024, 1, 7),
@@ -151,7 +151,7 @@ class TestPDFExporter:
         finally:
             os.unlink(file_path)
 
-    def test_export_task_report(self):
+    def test_export_task_report(self, qapp):
         tasks = [
             Task(id=1, title="任务1", notes="这是一个测试任务的备注", status=TaskStatus.ACTIVE, created_at=datetime.now(), updated_at=datetime.now(), estimated_pomodoros=4, completed_pomodoros=2),
         ]
@@ -160,7 +160,7 @@ class TestPDFExporter:
             file_path = f.name
 
         try:
-            result = PDFExporter.export_tasks(tasks, file_path)
+            result = PDFExporter.export_task_report(tasks, file_path)
             assert result is True
 
             assert os.path.exists(file_path)
