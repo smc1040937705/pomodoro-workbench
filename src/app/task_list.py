@@ -89,6 +89,7 @@ class TaskEditDialog(QDialog):
 class TaskListWidget(QWidget):
     task_selected = pyqtSignal(int)
     task_double_clicked = pyqtSignal(int)
+    task_created = pyqtSignal()
 
     def __init__(self, db: Database, parent=None):
         super().__init__(parent)
@@ -156,6 +157,7 @@ class TaskListWidget(QWidget):
             )
             self.db.create_task(task)
             self._load_tasks(include_archived=self.archive_btn.isChecked())
+            self.task_created.emit()
 
     def _edit_task(self, task_id: int):
         task = self.db.get_task(task_id)

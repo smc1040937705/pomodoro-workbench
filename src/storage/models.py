@@ -1,6 +1,6 @@
 from dataclasses import dataclass
-from datetime import datetime
-from typing import Optional
+from datetime import datetime, date
+from typing import Optional, Union
 from enum import Enum
 
 
@@ -89,7 +89,7 @@ class TimeEntry:
 @dataclass
 class DailyStats:
     id: Optional[int]
-    date: datetime
+    date: Union[date, datetime]
     work_seconds: int
     break_seconds: int
     pomodoros_completed: int
@@ -97,9 +97,15 @@ class DailyStats:
 
     @classmethod
     def from_dict(cls, data: dict) -> "DailyStats":
+        date_val = data["date"]
+        if isinstance(date_val, str):
+            date_val = datetime.fromisoformat(date_val)
+        # 转换为date对象
+        if isinstance(date_val, datetime):
+            date_val = date_val.date()
         return cls(
             id=data.get("id"),
-            date=datetime.fromisoformat(data["date"]) if isinstance(data["date"], str) else data["date"],
+            date=date_val,
             work_seconds=data.get("work_seconds", 0),
             break_seconds=data.get("break_seconds", 0),
             pomodoros_completed=data.get("pomodoros_completed", 0),

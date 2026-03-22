@@ -82,7 +82,7 @@ class TimerDisplay(QWidget):
 
         self.skip_btn = QPushButton("跳过")
         self.skip_btn.setFixedWidth(80)
-        self.skip_btn.clicked.connect(self.skip_clicked)
+        self.skip_btn.clicked.connect(self._on_skip)
         btn_layout.addWidget(self.skip_btn)
 
         self.reset_btn = QPushButton("重置")
@@ -104,6 +104,9 @@ class TimerDisplay(QWidget):
         self.timer.phase_changed.connect(self._on_phase_changed)
         self.timer.phase_completed.connect(self._on_phase_completed)
         self.timer.pomodoro_completed.connect(self._on_pomodoro_completed)
+        # 初始化UI状态
+        self._on_state_changed(self.timer.state)
+        self._on_phase_changed(self.timer.phase)
 
     def _on_tick(self, remaining: int, elapsed: int):
         self.time_label.setText(self.timer.format_time(remaining))
@@ -155,6 +158,7 @@ class TimerDisplay(QWidget):
         task_id = self.task_combo.currentData()
         self._current_task_id = task_id
         self.timer.start(task_id)
+        self._on_state_changed(self.timer.state)
         self.start_clicked.emit()
 
     def _on_pause(self):
@@ -170,6 +174,14 @@ class TimerDisplay(QWidget):
         self.time_label.setText(self.timer.format_time(self.timer.remaining_seconds))
         self.progress_bar.setValue(0)
         self.reset_clicked.emit()
+
+    def _on_skip(self):
+        self.timer.skip()
+        self._update_phase_label(self.timer.phase)
+        self.time_label.setText(self.timer.format_time(self.timer.remaining_seconds))
+        self.progress_bar.setValue(0)
+        self._on_state_changed(self.timer.state)
+        self.skip_clicked.emit()
 
     def _save_time_entry(self, phase: PomodoroPhase, start_time: datetime, end_time: datetime, is_completed: bool):
         pomodoro_type_map = {
@@ -222,3 +234,6 @@ class TimerDisplay(QWidget):
 
     def refresh_stats(self):
         self._update_pomodoro_count()
+
+    def get_selected_task_id(self):
+        return self.task_combo.currentData()
