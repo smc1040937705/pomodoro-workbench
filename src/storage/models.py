@@ -97,9 +97,17 @@ class DailyStats:
 
     @classmethod
     def from_dict(cls, data: dict) -> "DailyStats":
+        date_value = data["date"]
+        if isinstance(date_value, str):
+            # Parse ISO format and convert to date object
+            dt = datetime.fromisoformat(date_value)
+            date_value = dt.date()
+        elif isinstance(date_value, datetime):
+            # Convert datetime to date
+            date_value = date_value.date()
         return cls(
             id=data.get("id"),
-            date=datetime.fromisoformat(data["date"]) if isinstance(data["date"], str) else data["date"],
+            date=date_value,
             work_seconds=data.get("work_seconds", 0),
             break_seconds=data.get("break_seconds", 0),
             pomodoros_completed=data.get("pomodoros_completed", 0),

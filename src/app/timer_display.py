@@ -82,7 +82,7 @@ class TimerDisplay(QWidget):
 
         self.skip_btn = QPushButton("跳过")
         self.skip_btn.setFixedWidth(80)
-        self.skip_btn.clicked.connect(self.skip_clicked)
+        self.skip_btn.clicked.connect(self._on_skip)
         btn_layout.addWidget(self.skip_btn)
 
         self.reset_btn = QPushButton("重置")
@@ -165,6 +165,10 @@ class TimerDisplay(QWidget):
         self.timer.resume()
         self.resume_clicked.emit()
 
+    def _on_skip(self):
+        self.timer.skip()
+        self.skip_clicked.emit()
+
     def _on_reset(self):
         self.timer.reset()
         self.time_label.setText(self.timer.format_time(self.timer.remaining_seconds))
@@ -222,3 +226,10 @@ class TimerDisplay(QWidget):
 
     def refresh_stats(self):
         self._update_pomodoro_count()
+
+    def get_selected_task_id(self) -> Optional[int]:
+        return self.task_combo.currentData()
+
+    def update_time_display(self):
+        """更新计时器显示的时间"""
+        self.time_label.setText(self.timer.format_time(self.timer.remaining_seconds))

@@ -131,8 +131,11 @@ class PomodoroTimer:
             self._complete_phase()
 
     def _complete_phase(self, skipped: bool = False):
+        # 计算是否真正完成（时间耗尽）还是跳过
+        is_completed = not skipped and self._remaining_seconds <= 0
+
         if self._on_phase_complete_callback:
-            self._on_phase_complete_callback(self._phase)
+            self._on_phase_complete_callback(self._phase, is_completed)
 
         if self._phase == PomodoroPhase.WORK and not skipped:
             self._pomodoros_completed += 1

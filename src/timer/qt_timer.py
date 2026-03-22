@@ -102,10 +102,9 @@ class QtPomodoroTimer(QObject):
             self._qtimer.stop()
         self.state_changed.emit(state)
 
-    def _on_phase_complete(self, phase: PomodoroPhase):
+    def _on_phase_complete(self, phase: PomodoroPhase, is_completed: bool):
         start_time = self._timer.session_start_time
         end_time = datetime.now()
-        is_completed = self._timer.remaining_seconds <= 0
         self.phase_completed.emit(phase, start_time or end_time, end_time, is_completed)
         if phase == PomodoroPhase.WORK and is_completed:
             self.pomodoro_completed.emit(self._timer.pomodoros_completed)

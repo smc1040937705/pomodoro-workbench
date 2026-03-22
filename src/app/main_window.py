@@ -218,6 +218,16 @@ class MainWindow(QMainWindow):
 
         self.task_list.task_selected.connect(self._on_task_selected)
         self.task_list.task_double_clicked.connect(self._on_task_double_clicked)
+        self.task_list.task_created.connect(self._refresh_timer_tasks)
+        self.task_list.task_updated.connect(self._refresh_timer_tasks)
+        self.task_list.task_deleted.connect(self._refresh_timer_tasks)
+
+        # 分屏视图的任务列表信号
+        self.split_task_list.task_selected.connect(self._on_task_selected)
+        self.split_task_list.task_double_clicked.connect(self._on_task_double_clicked)
+        self.split_task_list.task_created.connect(self._refresh_timer_tasks)
+        self.split_task_list.task_updated.connect(self._refresh_timer_tasks)
+        self.split_task_list.task_deleted.connect(self._refresh_timer_tasks)
 
         self.tray_icon.show_window_requested.connect(self.show)
         self.tray_icon.quit_requested.connect(self._quit_app)
@@ -310,6 +320,12 @@ class MainWindow(QMainWindow):
         self.split_timer_display.set_current_task(task_id)
         self.settings_manager.save_last_task_id(task_id)
 
+    def _refresh_timer_tasks(self):
+        """刷新计时器面板的任务列表"""
+        tasks = self.db.get_all_tasks()
+        self.timer_display.load_tasks(tasks)
+        self.split_timer_display.load_tasks(tasks)
+
     def _on_view_changed(self, index: int):
         self.settings_manager.save_current_view(index)
 
@@ -331,6 +347,10 @@ class MainWindow(QMainWindow):
             auto_start_work=config.auto_start_work,
         )
         self.timer.update_config(timer_config)
+
+        # 更新计时器显示的时间
+        self.timer_display.update_time_display()
+        self.split_timer_display.update_time_display()
 
         self.notification_manager.set_sound_enabled(config.sound_enabled)
         self.notification_manager.set_notification_enabled(config.notification_enabled)

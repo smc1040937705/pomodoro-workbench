@@ -11,8 +11,7 @@ from src.analytics.stats_calculator import StatsCalculator
 class TestStatsCalculator:
     @pytest.fixture
     def db(self):
-        with tempfile.NamedTemporaryFile(suffix=".db", delete=False) as f:
-            db_path = f.name
+        db_path = tempfile.mktemp(suffix=".db")
         db = Database(db_path)
         yield db
         os.unlink(db_path)
