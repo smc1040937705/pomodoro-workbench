@@ -216,8 +216,15 @@ class MainWindow(QMainWindow):
         self.timer.phase_completed.connect(self._on_phase_completed)
         self.timer.pomodoro_completed.connect(self._on_pomodoro_completed)
 
+        self.timer_display.skip_clicked.connect(self.timer.skip)
+        self.split_timer_display.skip_clicked.connect(self.timer.skip)
+
         self.task_list.task_selected.connect(self._on_task_selected)
         self.task_list.task_double_clicked.connect(self._on_task_double_clicked)
+        self.task_list.tasks_changed.connect(self._on_tasks_changed)
+
+        self.split_task_list.task_double_clicked.connect(self._on_task_double_clicked)
+        self.split_task_list.tasks_changed.connect(self._on_tasks_changed)
 
         self.tray_icon.show_window_requested.connect(self.show)
         self.tray_icon.quit_requested.connect(self._quit_app)
@@ -310,6 +317,11 @@ class MainWindow(QMainWindow):
         self.split_timer_display.set_current_task(task_id)
         self.settings_manager.save_last_task_id(task_id)
 
+    def _on_tasks_changed(self):
+        tasks = self.db.get_all_tasks()
+        self.timer_display.load_tasks(tasks)
+        self.split_timer_display.load_tasks(tasks)
+
     def _on_view_changed(self, index: int):
         self.settings_manager.save_current_view(index)
 
@@ -331,6 +343,9 @@ class MainWindow(QMainWindow):
             auto_start_work=config.auto_start_work,
         )
         self.timer.update_config(timer_config)
+
+        self.timer_display.refresh_time_display()
+        self.split_timer_display.refresh_time_display()
 
         self.notification_manager.set_sound_enabled(config.sound_enabled)
         self.notification_manager.set_notification_enabled(config.notification_enabled)

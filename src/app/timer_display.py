@@ -222,3 +222,10 @@ class TimerDisplay(QWidget):
 
     def refresh_stats(self):
         self._update_pomodoro_count()
+
+    def get_selected_task_id(self) -> Optional[int]:
+        return self.task_combo.currentData()
+
+    def refresh_time_display(self):
+        self.time_label.setText(self.timer.format_time(self.timer.remaining_seconds))
+        self.progress_bar.setValue(0)

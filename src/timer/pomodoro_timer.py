@@ -80,7 +80,7 @@ class PomodoroTimer:
 
     def set_callbacks(self, on_tick: Optional[Callable[[int, int], None]] = None,
                       on_state_change: Optional[Callable[[TimerState], None]] = None,
-                      on_phase_complete: Optional[Callable[[PomodoroPhase], None]] = None,
+                      on_phase_complete: Optional[Callable[[PomodoroPhase, bool], None]] = None,
                       on_phase_change: Optional[Callable[[PomodoroPhase], None]] = None):
         self._on_tick_callback = on_tick
         self._on_state_change_callback = on_state_change
@@ -111,7 +111,6 @@ class PomodoroTimer:
         self._complete_phase(skipped=True)
 
     def reset(self):
-        self._state = TimerState.IDLE
         self._remaining_seconds = self._get_phase_duration()
         self._elapsed_seconds = 0
         self._session_start_time = None
@@ -132,7 +131,7 @@ class PomodoroTimer:
 
     def _complete_phase(self, skipped: bool = False):
         if self._on_phase_complete_callback:
-            self._on_phase_complete_callback(self._phase)
+            self._on_phase_complete_callback(self._phase, skipped)
 
         if self._phase == PomodoroPhase.WORK and not skipped:
             self._pomodoros_completed += 1
