@@ -111,7 +111,6 @@ class PomodoroTimer:
         self._complete_phase(skipped=True)
 
     def reset(self):
-        self._state = TimerState.IDLE
         self._remaining_seconds = self._get_phase_duration()
         self._elapsed_seconds = 0
         self._session_start_time = None
@@ -134,10 +133,29 @@ class PomodoroTimer:
         if self._on_phase_complete_callback:
             self._on_phase_complete_callback(self._phase)
 
+        # 确定下一个阶段（在修改计数之前判断休息类型）
+        if self._phase == PomodoroPhase.WORK:
+            # 计算完成后的值用于判断休息类型
+            temp_count = self._pomodoros_completed + 1  # 这是第N+1个番茄
+            if temp_count % self.config.pomodoros_until_long_break == 0:
+                next_phase = PomodoroPhase.LONG_BREAK
+            else:
+                next_phase = PomodoroPhase.SHORT_BREAK
+        else:
+            next_phase = PomodoroPhase.WORK
+
+        # 实际增加计数（非跳过才增加）
         if self._phase == PomodoroPhase.WORK and not skipped:
             self._pomodoros_completed += 1
 
-        self._advance_phase()
+        # 切换阶段
+        self._phase = next_phase
+        self._remaining_seconds = self._get_phase_duration()
+        self._elapsed_seconds = 0
+
+        if self._on_phase_change_callback:
+            self._on_phase_change_callback(self._phase)
+
         self.reset()
 
         if self.config.auto_start_break and self._phase in (PomodoroPhase.SHORT_BREAK, PomodoroPhase.LONG_BREAK):
@@ -146,8 +164,11 @@ class PomodoroTimer:
             self.start()
 
     def _advance_phase(self):
+        # 此方法逻辑已移到_complete_phase中，因为需要根据完成的番茄数判断休息类型
+        # 保留这个方法用于其他可能的调用场景
         if self._phase == PomodoroPhase.WORK:
-            if self._pomodoros_completed > 0 and self._pomodoros_completed % self.config.pomodoros_until_long_break == 0:
+            temp_count = self._pomodoros_completed + 1
+            if temp_count % self.config.pomodoros_until_long_break == 0:
                 self._phase = PomodoroPhase.LONG_BREAK
             else:
                 self._phase = PomodoroPhase.SHORT_BREAK

@@ -218,6 +218,12 @@ class MainWindow(QMainWindow):
 
         self.task_list.task_selected.connect(self._on_task_selected)
         self.task_list.task_double_clicked.connect(self._on_task_double_clicked)
+        self.task_list.task_created.connect(self._refresh_task_dropdowns)
+        
+        # 分屏视图信号连接
+        self.split_task_list.task_selected.connect(self._on_task_selected)
+        self.split_task_list.task_double_clicked.connect(self._on_task_double_clicked)
+        self.split_task_list.task_created.connect(self._refresh_task_dropdowns)
 
         self.tray_icon.show_window_requested.connect(self.show)
         self.tray_icon.quit_requested.connect(self._quit_app)
@@ -313,6 +319,11 @@ class MainWindow(QMainWindow):
     def _on_view_changed(self, index: int):
         self.settings_manager.save_current_view(index)
 
+    def _refresh_task_dropdowns(self):
+        tasks = self.db.get_all_tasks()
+        self.timer_display.load_tasks(tasks)
+        self.split_timer_display.load_tasks(tasks)
+
     def _show_settings(self):
         dialog = SettingsDialog(self.timer_config, self)
         dialog.settings_changed.connect(self._apply_settings)
@@ -331,6 +342,10 @@ class MainWindow(QMainWindow):
             auto_start_work=config.auto_start_work,
         )
         self.timer.update_config(timer_config)
+
+        # 更新计时器显示
+        self.timer_display.time_label.setText(self.timer.format_time(self.timer.remaining_seconds))
+        self.split_timer_display.time_label.setText(self.timer.format_time(self.timer.remaining_seconds))
 
         self.notification_manager.set_sound_enabled(config.sound_enabled)
         self.notification_manager.set_notification_enabled(config.notification_enabled)

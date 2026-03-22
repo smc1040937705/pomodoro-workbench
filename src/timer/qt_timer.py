@@ -98,8 +98,11 @@ class QtPomodoroTimer(QObject):
         self.tick.emit(remaining, elapsed)
 
     def _on_state_change(self, state: TimerState):
-        if state == TimerState.IDLE:
+        if state == TimerState.IDLE or state == TimerState.PAUSED:
             self._qtimer.stop()
+        elif state == TimerState.RUNNING:
+            if not self._qtimer.isActive():
+                self._qtimer.start(1000)
         self.state_changed.emit(state)
 
     def _on_phase_complete(self, phase: PomodoroPhase):
